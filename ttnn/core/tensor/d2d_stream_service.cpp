@@ -1181,6 +1181,7 @@ constexpr uint32_t kSenderReadRingSlots = 4;
 
 // CT-arg layout must stay in sync with persistent_d2d_receiver.cpp.
 Program build_receiver_program(
+    const distributed::MeshDevice& mesh_device,
     const Buffer& output_buffer,
     const CoreCoord& service_core,
     uint32_t socket_config_addr,
@@ -1262,7 +1263,7 @@ Program build_receiver_program(
     // connection runs receiver -> sender.
     std::vector<uint32_t> rt_args;
     tt::tt_fabric::append_fabric_connection_rt_args(
-        receiver_node, sender_node, link_index, program, service_core, rt_args);
+        mesh_device, receiver_node, sender_node, link_index, program, service_core, rt_args);
     SetRuntimeArgs(program, kernel, service_core, rt_args);
     return program;
 }
@@ -1278,6 +1279,7 @@ Program build_receiver_program(
 // the master, streaming the whole tensor. The SAME full CT layout goes to both
 // kernels; per-lane fields differ.
 Program build_sender_program(
+    const distributed::MeshDevice& mesh_device,
     const Buffer& input_buffer,
     const CoreCoord& service_core,
     uint32_t socket_config_addr,
@@ -1382,7 +1384,7 @@ Program build_sender_program(
         // receiver backing tensor base address (the direct fabric-write destination).
         std::vector<uint32_t> rt_args;
         tt::tt_fabric::append_fabric_connection_rt_args(
-            sender_node, receiver_node, link_indices[lane], program, service_core, rt_args);
+            mesh_device, sender_node, receiver_node, link_indices[lane], program, service_core, rt_args);
         rt_args.push_back(receiver_tensor_addr);
         SetRuntimeArgs(program, kernel, service_core, rt_args);
     }
@@ -1570,6 +1572,7 @@ SenderSideResources build_sender_side(
         workload->add_program(
             distributed::MeshCoordinateRange(coord),
             build_sender_program(
+                *mesh,
                 *send_buf,
                 service_core,
                 socket_config_addr,
@@ -1746,6 +1749,7 @@ ReceiverSideResources build_receiver_side(
         workload->add_program(
             distributed::MeshCoordinateRange(coord),
             build_receiver_program(
+                *mesh,
                 *recv_buf,
                 service_core,
                 socket_config_addr,
