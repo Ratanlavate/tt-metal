@@ -1964,11 +1964,7 @@ FORCE_INLINE void fabric_unicast_noc_unicast_write(
  * | offset                                | Offset within page                      | uint32_t                                      | False    |
  */
 // clang-format on
-template <
-    UnicastWriteUpdateMask UpdateMask = UnicastWriteUpdateMask::DstAddr | UnicastWriteUpdateMask::PayloadSize,
-    typename FabricSenderType,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastWriteUpdateMask UpdateMask, typename FabricSenderType, typename AddrGenType, typename>
 FORCE_INLINE void fabric_unicast_noc_unicast_write_with_state(
     tt_l1_ptr FabricSenderType* client_interface,
     volatile PACKET_HEADER_TYPE* packet_header,
@@ -1996,10 +1992,7 @@ FORCE_INLINE void fabric_unicast_noc_unicast_write_with_state(
  * | offset                                | Offset within page                      | uint32_t                                      | False    |
  */
 // clang-format on
-template <
-    UnicastWriteUpdateMask UpdateMask = UnicastWriteUpdateMask::DstAddr | UnicastWriteUpdateMask::PayloadSize,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastWriteUpdateMask UpdateMask, typename AddrGenType, typename>
 FORCE_INLINE void fabric_unicast_noc_unicast_write_set_state(
     volatile PACKET_HEADER_TYPE* packet_header,
     uint8_t dst_dev_id,
@@ -2066,12 +2059,7 @@ FORCE_INLINE void fabric_unicast_noc_fused_unicast_with_atomic_inc(
  * | flush                                 | Flush data cache after write            | bool                                          | False    |
  */
 // clang-format on
-template <
-    UnicastFusedAtomicIncUpdateMask UpdateMask = UnicastFusedAtomicIncUpdateMask::WriteDstAddr |
-                                                 UnicastFusedAtomicIncUpdateMask::PayloadSize,
-    typename FabricSenderType,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastFusedAtomicIncUpdateMask UpdateMask, typename FabricSenderType, typename AddrGenType, typename>
 FORCE_INLINE void fabric_unicast_noc_fused_unicast_with_atomic_inc_with_state(
     tt_l1_ptr FabricSenderType* client_interface,
     volatile PACKET_HEADER_TYPE* packet_header,
@@ -2105,13 +2093,7 @@ FORCE_INLINE void fabric_unicast_noc_fused_unicast_with_atomic_inc_with_state(
  * | flush                                 | Flush data cache after write            | bool                                          | False    |
  */
 // clang-format on
-template <
-    UnicastFusedAtomicIncUpdateMask UpdateMask =
-        UnicastFusedAtomicIncUpdateMask::WriteDstAddr | UnicastFusedAtomicIncUpdateMask::SemaphoreAddr |
-        UnicastFusedAtomicIncUpdateMask::Val | UnicastFusedAtomicIncUpdateMask::Flush |
-        UnicastFusedAtomicIncUpdateMask::PayloadSize,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastFusedAtomicIncUpdateMask UpdateMask, typename AddrGenType, typename>
 FORCE_INLINE void fabric_unicast_noc_fused_unicast_with_atomic_inc_set_state(
     volatile PACKET_HEADER_TYPE* packet_header,
     uint8_t dst_dev_id,
@@ -2177,13 +2159,7 @@ FORCE_INLINE void fabric_unicast_noc_scatter_write(
  * | offset1            | Offset within second page               | uint32_t                                   | False    |
  */
 // clang-format on
-template <
-    UnicastScatterWriteUpdateMask UpdateMask = UnicastScatterWriteUpdateMask::DstAddrs |
-                                               UnicastScatterWriteUpdateMask::ChunkSizes |
-                                               UnicastScatterWriteUpdateMask::PayloadSize,
-    typename FabricSenderType,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastScatterWriteUpdateMask UpdateMask, typename FabricSenderType, typename AddrGenType, typename>
 FORCE_INLINE void fabric_unicast_noc_scatter_write_with_state(
     tt_l1_ptr FabricSenderType* client_interface,
     volatile PACKET_HEADER_TYPE* packet_header,
@@ -2215,12 +2191,7 @@ FORCE_INLINE void fabric_unicast_noc_scatter_write_with_state(
  * | offset1            | Offset within second page               | uint32_t                                   | False    |
  */
 // clang-format on
-template <
-    UnicastScatterWriteUpdateMask UpdateMask = UnicastScatterWriteUpdateMask::DstAddrs |
-                                               UnicastScatterWriteUpdateMask::ChunkSizes |
-                                               UnicastScatterWriteUpdateMask::PayloadSize,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastScatterWriteUpdateMask UpdateMask, typename AddrGenType, typename>
 FORCE_INLINE void fabric_unicast_noc_scatter_write_set_state(
     volatile PACKET_HEADER_TYPE* packet_header,
     uint8_t dst_dev_id,
@@ -2282,11 +2253,7 @@ FORCE_INLINE void fabric_multicast_noc_unicast_write(
  * | offset             | Offset within page                      | uint32_t                                   | False    |
  */
 // clang-format on
-template <
-    UnicastWriteUpdateMask UpdateMask = UnicastWriteUpdateMask::DstAddr | UnicastWriteUpdateMask::PayloadSize,
-    typename FabricSenderType,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastWriteUpdateMask UpdateMask, typename FabricSenderType, typename AddrGenType, typename>
 FORCE_INLINE void fabric_multicast_noc_unicast_write_with_state(
     tt_l1_ptr FabricSenderType* client_interface,
     volatile PACKET_HEADER_TYPE* packet_header,
@@ -2316,10 +2283,7 @@ FORCE_INLINE void fabric_multicast_noc_unicast_write_with_state(
  * | offset             | Offset within page                      | uint32_t                                   | False    |
  */
 // clang-format on
-template <
-    UnicastWriteUpdateMask UpdateMask = UnicastWriteUpdateMask::DstAddr | UnicastWriteUpdateMask::PayloadSize,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastWriteUpdateMask UpdateMask, typename AddrGenType, typename>
 FORCE_INLINE void fabric_multicast_noc_unicast_write_set_state(
     volatile PACKET_HEADER_TYPE* packet_header,
     uint8_t dst_dev_id,
@@ -2386,13 +2350,7 @@ FORCE_INLINE void fabric_multicast_noc_scatter_write(
  * | offset1            | Offset within second page               | uint32_t                                   | False    |
  */
 // clang-format on
-template <
-    UnicastScatterWriteUpdateMask UpdateMask = UnicastScatterWriteUpdateMask::DstAddrs |
-                                               UnicastScatterWriteUpdateMask::ChunkSizes |
-                                               UnicastScatterWriteUpdateMask::PayloadSize,
-    typename FabricSenderType,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastScatterWriteUpdateMask UpdateMask, typename FabricSenderType, typename AddrGenType, typename>
 FORCE_INLINE void fabric_multicast_noc_scatter_write_with_state(
     tt_l1_ptr FabricSenderType* client_interface,
     volatile PACKET_HEADER_TYPE* packet_header,
@@ -2426,12 +2384,7 @@ FORCE_INLINE void fabric_multicast_noc_scatter_write_with_state(
  * | offset1            | Offset within second page               | uint32_t                                   | False    |
  */
 // clang-format on
-template <
-    UnicastScatterWriteUpdateMask UpdateMask = UnicastScatterWriteUpdateMask::DstAddrs |
-                                               UnicastScatterWriteUpdateMask::ChunkSizes |
-                                               UnicastScatterWriteUpdateMask::PayloadSize,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastScatterWriteUpdateMask UpdateMask, typename AddrGenType, typename>
 FORCE_INLINE void fabric_multicast_noc_scatter_write_set_state(
     volatile PACKET_HEADER_TYPE* packet_header,
     uint8_t dst_dev_id,
@@ -2500,13 +2453,7 @@ FORCE_INLINE void fabric_multicast_noc_fused_unicast_with_atomic_inc(
  * | flush                  | Flush data cache after write            | bool                                       | False    |
  */
 // clang-format on
-template <
-    UnicastFusedAtomicIncUpdateMask UpdateMask = UnicastFusedAtomicIncUpdateMask::WriteDstAddr |
-                                                 UnicastFusedAtomicIncUpdateMask::SemaphoreAddr |
-                                                 UnicastFusedAtomicIncUpdateMask::PayloadSize,
-    typename FabricSenderType,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastFusedAtomicIncUpdateMask UpdateMask, typename FabricSenderType, typename AddrGenType, typename>
 FORCE_INLINE void fabric_multicast_noc_fused_unicast_with_atomic_inc_with_state(
     tt_l1_ptr FabricSenderType* client_interface,
     volatile PACKET_HEADER_TYPE* packet_header,
@@ -2539,10 +2486,7 @@ FORCE_INLINE void fabric_multicast_noc_fused_unicast_with_atomic_inc_with_state(
  * | flush                  | Flush data cache after write            | bool                                       | False    |
  */
 // clang-format on
-template <
-    UnicastFusedAtomicIncUpdateMask UpdateMask,
-    typename AddrGenType,
-    typename = std::enable_if_t<is_addrgen<AddrGenType>::value>>
+template <UnicastFusedAtomicIncUpdateMask UpdateMask, typename AddrGenType, typename>
 FORCE_INLINE void fabric_multicast_noc_fused_unicast_with_atomic_inc_set_state(
     volatile PACKET_HEADER_TYPE* packet_header,
     uint8_t dst_dev_id,

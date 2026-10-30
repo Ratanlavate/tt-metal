@@ -1641,19 +1641,20 @@ void ControlPlane::configure_routing_tables_for_fabric_over_noc() {
             const uint32_t dst_chip = dst_phys;
 
             if (dst_phys == src_phys) {
-                // Fill LOCAL (self tile) and REMOTE (same-chip peer tiles) entries using the ATT config.
-                for (const auto& core :
-                     this->cluster_.get().get_soc_desc(src_phys).get_cores(CoreType::TENSIX, CoordSystem::NOC0)) {
-                    if (core.x >= tt::tt_fabric::MAX_HORIZON_NOC_X || core.y >= tt::tt_fabric::MAX_HORIZON_NOC_Y) {
-                        continue;
+                // For Horizon x2: the physical chip hosts one logical device per NOC column.
+                // Logical device id = physical NOC column (x). Device-local core (0, y) -> physical (dev_id, y).
+                for (uint32_t dev_id = 0; dev_id < tt::tt_fabric::MAX_HORIZON_NOC_X; dev_id++) {
+                    for (uint32_t local_y = 0; local_y < tt::tt_fabric::MAX_HORIZON_NOC_Y; local_y++) {
+                        const uint32_t phys_x = dev_id;
+                        const uint32_t phys_y = local_y;
+                        const uint32_t selector = phys_x + phys_y * tt::tt_fabric::HORIZON_ATT_WORKER_GRID_X;
+                        const bool is_self = (phys_x == info.my_noc_x && phys_y == info.my_noc_y);
+                        const uint64_t addr =
+                            is_self ? tt::tt_fabric::HORIZON_LOCAL_WINDOW_COMPARE
+                                    : tt::tt_fabric::HORIZON_REMOTE_WINDOW_COMPARE |
+                                          (uint64_t(selector) << tt::tt_fabric::HORIZON_REMOTE_ENDPOINT_SHIFT);
+                        info.flat_addr[0][dev_id][0][local_y] = addr;
                     }
-                    const bool is_self = (core.x == info.my_noc_x && core.y == info.my_noc_y);
-                    const uint64_t addr =
-                        is_self ? tt::tt_fabric::HORIZON_LOCAL_WINDOW_COMPARE
-                                : tt::tt_fabric::HORIZON_REMOTE_WINDOW_COMPARE |
-                                      (uint64_t(core.x + core.y * tt::tt_fabric::HORIZON_ATT_WORKER_GRID_X)
-                                       << tt::tt_fabric::HORIZON_REMOTE_ENDPOINT_SHIFT);
-                    info.flat_addr[0][dst_chip][core.x][core.y] = addr;
                 }
                 continue;
             }
