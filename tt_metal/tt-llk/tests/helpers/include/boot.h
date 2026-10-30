@@ -50,7 +50,24 @@ TT_ALWAYS_INLINE void configure_gathering()
 #endif
 }
 
-#if defined(ARCH_QUASAR)
+#if defined(ARCH_WORMHOLE) || defined(ARCH_BLACKHOLE)
+// STREAM_SCRATCH_0 of overlay stream 0 (24 bits, host readable, outside L1 and the Tensix register bus): BRISC marks the
+// launch done there (brisc.cpp), so the host waits on a kernel without touching anything the kernel uses.
+namespace host_signal
+{
+#if defined(ARCH_WORMHOLE)
+constexpr std::uint32_t STREAM_SCRATCH_REG_INDEX = 248;
+#else
+constexpr std::uint32_t STREAM_SCRATCH_REG_INDEX = 36;
+#endif
+constexpr std::uint32_t NOC_OVERLAY_START_ADDR = 0xFFB40000;
+
+TT_ALWAYS_INLINE volatile std::uint32_t* launch_done()
+{
+    return reinterpret_cast<volatile std::uint32_t*>(NOC_OVERLAY_START_ADDR + STREAM_SCRATCH_REG_INDEX * 4);
+}
+} // namespace host_signal
+#elif defined(ARCH_QUASAR)
 // Quasar has no overlay streams: TT_CLUSTER_CTRL_SCRATCH_28..31 (host readable, outside L1, unused elsewhere) carry the
 // TRISC completion flags in slots 0..3, so the host can wait on a kernel without reading its L1.
 namespace host_signal

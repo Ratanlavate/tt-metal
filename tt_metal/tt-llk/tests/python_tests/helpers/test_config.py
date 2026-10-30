@@ -2077,6 +2077,11 @@ class TestConfig:
 
         match boot_mode:
             case BootMode.BRISC:
+                launch_done = device_module.launch_done_address()
+                if launch_done is not None:
+                    write_words_to_device(
+                        TestConfig.TENSIX_LOCATION, launch_done, [0], safe_mode=False
+                    )
                 # Not a committed write: a short kernel can be done and back in reset before a readback.
                 set_tensix_soft_reset(0, [RiscCore.BRISC], TestConfig.TENSIX_LOCATION)
             case BootMode.TRISC:
@@ -2138,10 +2143,27 @@ class TestConfig:
         brisc_launch = self.resolved_boot_mode() == BootMode.BRISC
         if brisc_launch:
             brisc_done_mask = get_soft_reset_mask([RiscCore.BRISC, *TRISC_CORES])
+            # Silicon: the overlay register BRISC marks the launch done in, off L1 and the Tensix register bus.
+            launch_done = device_module.launch_done_address()
 
         end_time = time.time() + timeout
         while time.time() < end_time:
-            if brisc_launch:
+            if brisc_launch and launch_done is not None:
+                done = (
+                    np.frombuffer(
+                        read_from_device(TestConfig.TENSIX_LOCATION, launch_done, num_bytes=4),
+                        dtype=np.uint32,
+                    )[0]
+                    & device_module.HOST_SIGNAL_MASK
+                    == KERNEL_COMPLETE
+                )
+                # BRISC puts the cores in reset right after marking the launch done.
+                while done and (
+                    soft_reset_bits(TestConfig.TENSIX_LOCATION) & brisc_done_mask
+                    != brisc_done_mask
+                ):
+                    pass
+            elif brisc_launch:
                 done = (
                     soft_reset_bits(TestConfig.TENSIX_LOCATION) & brisc_done_mask
                     == brisc_done_mask

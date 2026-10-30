@@ -260,6 +260,24 @@ def soft_reset_bits(location: str = "0,0") -> int:
 _QUASAR_HOST_SIGNAL_BASE = 0x030000B0  # TT_CLUSTER_CTRL_SCRATCH_28
 
 
+# boot.h host_signal on Wormhole and Blackhole: STREAM_SCRATCH_0 of overlay stream 0, where BRISC marks a launch done.
+_NOC_OVERLAY_START_ADDR = 0xFFB40000
+_HOST_SIGNAL_SCRATCH_INDEX = {
+    ChipArchitecture.WORMHOLE: 248,
+    ChipArchitecture.BLACKHOLE: 36,
+}
+HOST_SIGNAL_MASK = 0xFFFFFF
+
+
+def launch_done_address() -> int | None:
+    """Wormhole and Blackhole silicon: the overlay register BRISC marks a launch done in (None on simulators)."""
+    index = _HOST_SIGNAL_SCRATCH_INDEX.get(get_chip_architecture())
+    target = TestTargetConfig._instance
+    if index is None or (target is not None and target.run_simulator):
+        return None
+    return _NOC_OVERLAY_START_ADDR + index * 4
+
+
 def host_signal_address(slot: int) -> int | None:
     """Address of host signal slot, or None when this target signals through L1 only."""
     if get_chip_architecture() != ChipArchitecture.QUASAR:

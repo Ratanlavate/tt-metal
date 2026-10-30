@@ -68,6 +68,12 @@ int main()
     {
         (void)ckernel::load_blocking(pc_buf);
     }
+    // What the host waits on: polling the soft reset register instead shares the Tensix register bus with the
+    // kernel's wall clock reads and moves its timings.
+    *host_signal::launch_done() = ckernel::KERNEL_COMPLETE;
+    while ((*host_signal::launch_done() & 0xFFU) != ckernel::KERNEL_COMPLETE)
+    {
+    }
 #endif
 
     ckernel::reg_write(RISCV_DEBUG_REG_SOFT_RESET_0, ckernel::reg_read(RISCV_DEBUG_REG_SOFT_RESET_0) | TRISC_SOFT_RESET_MASK | BRISC_SOFT_RESET_MASK);
