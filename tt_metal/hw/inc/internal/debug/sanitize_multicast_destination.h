@@ -17,14 +17,17 @@ struct DebugNodeCoord {
     bool operator==(DebugNodeCoord other) const { return x == other.x && y == other.y; }
 };
 // The rectangle as the NoC walks it: NoC 0 runs from the start corner up to the end corner and NoC 1 down; corners
-// given the other way round wrap around the grid edge, which the checks report rather than model.
+// given the other way round wrap around the grid edge, which the checks report rather than model. A corner past the NoC
+// coordinate range is reported too, before the scans over the rectangle could loop on it.
 struct DebugMulticastRect {
     DebugNodeCoord min;
     DebugNodeCoord max;
-    bool wraps;
+    bool is_malformed;
 
     DebugMulticastRect(uint8_t noc_id, DebugNodeCoord start, DebugNodeCoord end) :
-        min{noc_id == 0 ? start : end}, max{noc_id == 0 ? end : start}, wraps{min.x > max.x || min.y > max.y} {}
+        min{noc_id == 0 ? start : end},
+        max{noc_id == 0 ? end : start},
+        is_malformed{min.x > max.x || min.y > max.y || max.x > NOC_NODE_ID_MASK || max.y > NOC_NODE_ID_MASK} {}
 };
 inline bool debug_multicast_rect_contains(const DebugMulticastRect& rect, DebugNodeCoord node) {
     return node.x >= rect.min.x && node.x <= rect.max.x && node.y >= rect.min.y && node.y <= rect.max.y;
@@ -78,7 +81,7 @@ inline void debug_sanitize_multicast_rect_covered(
     bool is_sender_node,
     bool includes_sender) {
     bool covered = false;
-    if (!rect.wraps) {
+    if (!rect.is_malformed) {
         num_inside += !includes_sender && !is_sender_node && debug_multicast_rect_contains(rect, sender);
         covered = num_inside == debug_count_workers(noc_id, rect);
     }
@@ -111,7 +114,7 @@ void __attribute__((noinline)) debug_sanitize_noc_multicast_rect_in_node_set(
     uint32_t num_nodes,
     bool includes_sender) {
     const DebugMulticastRect rect{noc_id, start, end};
-    if (!rect.wraps && !debug_is_worker(noc_id, rect.min)) {
+    if (!rect.is_malformed && !debug_is_worker(noc_id, rect.min)) {
         return;  // left to the generic multicast check
     }
     const DebugNodeCoord sender = debug_sender_coord(noc_id);
