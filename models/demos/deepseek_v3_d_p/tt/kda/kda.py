@@ -47,15 +47,22 @@ def _effective_qkv_channel_chunk_size(channels: int, configured_chunk_size: int)
 
 
 def reduce_scatter_tp_partials(
-    partials: ttnn.Tensor, tt_ccl: TT_CCL, cluster_axis: int | None, topology: ttnn.Topology
+    partials: ttnn.Tensor,
+    tt_ccl: TT_CCL,
+    cluster_axis: int | None,
+    topology: ttnn.Topology,
+    num_links: int | None = None,
 ) -> ttnn.Tensor:
-    """Reduce-scatter the output projection's TP partial sums over the hidden dimension into DRAM."""
+    """Reduce-scatter the output projection's TP partial sums over the hidden dimension into DRAM.
+
+    A caller that dispatches it repeatedly passes ``num_links`` looked up once, rather than querying the mesh per call.
+    """
     return ttnn.experimental.reduce_scatter_minimal_async(
         partials,
         dim=-1,
         multi_device_global_semaphore=tt_ccl.get_and_cycle_rs_semaphore_handles(cluster_axis),
         barrier_semaphore=tt_ccl.get_and_cycle_barrier_semaphore_handle(cluster_axis),
-        num_links=tt_ccl.get_num_links(cluster_axis),
+        num_links=tt_ccl.get_num_links(cluster_axis) if num_links is None else num_links,
         memory_config=ttnn.DRAM_MEMORY_CONFIG,
         topology=topology,
         cluster_axis=cluster_axis,
@@ -242,6 +249,8 @@ class ttKDA:
         if self.tensor_parallel_size > 1 and tt_ccl is None:
             raise ValueError("tt_ccl is required for tensor-parallel KDA")
         self.tt_ccl = tt_ccl
+        # The link count is fixed by the mesh, so look it up once instead of on every forward.
+        self._tp_num_links = tt_ccl.get_num_links(self._tp_cluster_axis) if self.tensor_parallel_size > 1 else None
         # Ordinary matmuls (input and decay projections) keep packer L1 accumulation; the input
         # projection takes its fidelity from the program config.
         self.compute_config = ttnn.init_device_compute_kernel_config(
@@ -467,7 +476,9 @@ class ttKDA:
             compute_kernel_config=self.output_projection_compute_config,
         )
         if self.tensor_parallel_size > 1:
-            output = reduce_scatter_tp_partials(output, self.tt_ccl, self._tp_cluster_axis, self.tp_ccl_topology)
+            output = reduce_scatter_tp_partials(
+                output, self.tt_ccl, self._tp_cluster_axis, self.tp_ccl_topology, self._tp_num_links
+            )
         return output
 
     def forward(
